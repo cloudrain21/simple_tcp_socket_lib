@@ -3,7 +3,11 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#if __APPLE__
+#include <sys/socket.h>
+#else
 #include <linux/socket.h>
+#endif
 #include <netinet/tcp.h>
 #include <unistd.h>
 #include <fcntl.h>

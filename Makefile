@@ -14,15 +14,23 @@ LIBOBJFILES = socket_base.o tcp_socket.o
 CC = g++
 #CFLAGS = -g -W -Wall
 CFLAGS = -g -W -Wall -O0 \
-		 -fno-strict-aliasing -rdynamic -fno-inline -m64 -mtune=k8 \
+		 -fno-strict-aliasing -fno-inline -m64 -mtune=k8 \
 		 -fno-rtti  -fPIC -D_POSIX_PTHREAD_SEMANTICS -D_POSIX_THREADS \
 		 -D_POSIX_THREAD_SAFE_FUNCTIONS -D_REENTRANT -D_THREAD_SAFE \
 		 -D_GNU_SOURCE $(INCLUDE)
 #C99FLAGS = -I./include -I.. -std=c99 -Wall -pedantic -fsigned-char -O2
 LDFLAGS =
-LIBS = -lm -lpthread -ldl -rdynamic -lrt
 LDENV = LD_RUN_PATH=/lib:/usr/lib:/usr/local/lib:.:..
 POSTCMD = true
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	SONAME=install_name
+	LIBS = -lm -lpthread -ldl
+else
+	SONAME=soname
+	LIBS = -lm -lpthread -ldl -lrt
+endif
 
 #================================================================
 # Suffix rules
@@ -66,7 +74,7 @@ $(ARLIBFILE) : $(LIBOBJFILES)
 
 
 $(SOLIBFILE) : $(LIBOBJFILES)
-	$(CC) $(CFLAGS) -shared -Wl,-soname,libmysocket.so -o $@ $(LIBOBJFILES) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -shared -Wl,-$(SONAME),libmysocket.so -o $@ $(LIBOBJFILES) $(LDFLAGS) $(LIBS)
 	#$(CC) -shared -static-libgcc -rdynamic -m64 -mtune=k8 -o $@ $(LIBOBJFILES) -L. $(LIBS)
 
 
